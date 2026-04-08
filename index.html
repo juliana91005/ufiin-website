@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Mindbor – Mental Health Support</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:ital,wght@0,400;0,500;0,600;1,400&family=IBM+Plex+Serif:ital,wght@0,400;0,500;1,400;1,500&display=swap" rel="stylesheet">
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            n01: '#ffffff',
+            n02: '#fffefb',
+            n03: '#666563',
+            n04: '#292524',
+            t01: '#8d6959',
+            t02: '#fb6032',
+            t03: '#a1a16a',
+            o01: '#e5e0d9',
+            o02: '#f8f3ec',
+          },
+          fontFamily: {
+            sans: ['"IBM Plex Sans"', 'sans-serif'],
+            serif: ['"IBM Plex Serif"', 'serif'],
+          },
+        }
+      }
+    }
+  </script>
+  <style>
+    body { background-color: #fffefb; color: #292524; }
+  </style>
+</head>
+<body class="font-sans antialiased" style="background-color: #fffefb;">
+
+  <!-- ── Navbar ── -->
+  <nav class="flex items-center justify-between px-8 py-4">
+    <div class="flex items-center gap-10">
+      <!-- Logo -->
+      <a href="#" class="flex items-center gap-2 font-semibold text-[15px]" style="color: #292524;">
+        <span class="inline-flex items-center justify-center w-6 h-6 rounded-[6px]" style="background:#a1a16a;">
+          <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+            <path d="M7 2C5 2 3 3.5 3 6c0 2 1.5 3.5 4 4.5C10 9.5 11 8 11 6c0-2.5-2-4-4-4z" fill="white"/>
+            <line x1="7" y1="10.5" x2="7" y2="13" stroke="white" stroke-width="1.2"/>
+          </svg>
+        </span>
+        Mindbor
+      </a>
+      <!-- Nav links -->
+      <div class="flex items-center gap-7 text-sm font-normal" style="color: #292524;">
+        <a href="#" class="flex items-center gap-1 hover:opacity-70">All Pages
+          <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M3 4.5L6 7.5L9 4.5" stroke="#292524" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </a>
+        <a href="#" class="hover:opacity-70">About</a>
+        <a href="#" class="hover:opacity-70">Service</a>
+        <a href="#" class="hover:opacity-70">Contact</a>
+      </div>
+    </div>
+    <!-- Right nav -->
+    <div class="flex items-center gap-5">
+      <a href="#" class="flex items-center gap-2 text-sm hover:opacity-70" style="color: #292524;">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#292524" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 01-8 0"/></svg>
+        Book A Session
+      </a>
+      <a href="tel:+3214803029965" class="flex items-center gap-2 text-white text-sm font-medium px-5 py-2.5 rounded-full" style="background-color: #fb6032;">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="white"><path d="M6.62 10.79a15.05 15.05 0 006.59 6.59l2.2-2.2a1 1 0 011.02-.24 11.44 11.44 0 003.58.57 1 1 0 011 1V20a1 1 0 01-1 1A17 17 0 013 4a1 1 0 011-1h3.5a1 1 0 011 1 11.44 11.44 0 00.57 3.58 1 1 0 01-.25 1.02l-2.2 2.19z"/></svg>
+        +321 480-302-9965
+      </a>
+    </div>
+  </nav>
+
+  <!-- ── Hero Section ── -->
+  <div class="px-8 pb-10">
+    <div class="relative rounded-3xl overflow-hidden" style="background-color: #ede8e0; min-height: 420px;">
+
+      <!-- Decorative blobs -->
+      <div style="position:absolute;width:500px;height:500px;border-radius:50%;background:rgba(255,255,255,0.30);top:-90px;left:320px;pointer-events:none;z-index:0;"></div>
+      <div style="position:absolute;width:560px;height:560px;border-radius:50%;background:rgba(255,255,255,0.22);top:60px;left:480px;pointer-events:none;z-index:0;"></div>
+
+      <!-- Content left -->
+      <div class="relative z-10 py-14 pl-14 pr-8" style="max-width:620px;">
+        <h1 class="font-serif font-medium leading-tight mb-5" style="font-size:48px;letter-spacing:-0.02em;color:#292524;">
+          You're Not Alone<br>
+          <em style="color:#fb6032;font-style:italic;">Healing</em>&nbsp;Starts Here
+        </h1>
+        <p class="text-sm mb-8 leading-relaxed" style="color:#666563;max-width:300px;">
+          Mindbor provides care &amp; professional mental health support for their overall well-being.
+        </p>
+        <a href="#" class="inline-flex items-center gap-2 text-sm font-medium text-white px-6 py-3 rounded-full" style="background-color:#8d6959;">
+          Book A Session
+          <svg width="14" height="14" viewBox="0 0 16 16" fill="none"><path d="M3 8h10M9 4l4 4-4 4" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </a>
+
+        <!-- Social proof -->
+        <div class="mt-10 flex items-start gap-3">
+          <div class="flex -space-x-2.5 flex-shrink-0">
+            <img src="https://placehold.co/36x36/c8a898/ffffff?text=A" class="w-9 h-9 rounded-full border-2 border-white object-cover" alt=""/>
+            <img src="https://placehold.co/36x36/b89888/ffffff?text=B" class="w-9 h-9 rounded-full border-2 border-white object-cover" alt=""/>
+            <img src="https://placehold.co/36x36/a08878/ffffff?text=C" class="w-9 h-9 rounded-full border-2 border-white object-cover" alt=""/>
+          </div>
+          <div>
+            <div class="text-yellow-500 text-sm tracking-wide mb-1">★★★★★</div>
+            <p class="text-xs leading-snug" style="color:#666563;max-width:210px;">
+              See 300 individuals who have confidently trusted Sandra Minx for their overall well-being.
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Hero photo — positioned absolutely on right -->
+      <img
+        src="https://placehold.co/780x420/c4b5a8/666563?text=Person"
+        alt="Therapist"
+        class="absolute top-0 bottom-0 right-0 object-cover"
+        style="width:53%;height:100%;z-index:1;"
+      />
+    </div>
+  </div>
+
+  <!-- ── Your Mental Wellbeing ── -->
+  <div class="px-8 pt-2 pb-6 flex items-start justify-between">
+    <div>
+      <h2 class="font-serif font-medium mb-2" style="font-size:36px;letter-spacing:-0.02em;color:#292524;">
+        Your Mental <em style="color:#fb6032;font-style:italic;">Wellbeing</em>
+      </h2>
+      <p class="text-sm leading-relaxed" style="color:#666563;max-width:360px;">
+        Mindbor provides care &amp; expert mental health support throughout your growth.
+      </p>
+    </div>
+    <div class="flex-shrink-0 mt-2">
+      <a href="#" class="inline-flex items-center gap-2 text-sm font-medium text-white px-6 py-3 rounded-full" style="background-color:#292524;">
+        Who We Are
+        <svg width="14" height="14" viewBox="0 0 16 16" fill="none"><path d="M3 8h10M9 4l4 4-4 4" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </a>
+    </div>
+  </div>
+
+  <!-- ── Photo Gallery (staggered) ── -->
+  <div class="pl-8 pb-16 overflow-hidden">
+    <!-- flex container: items at top, alternating ones offset down via margin-top -->
+    <div class="flex gap-4 items-start">
+      <!-- Image 1: short, top -->
+      <img src="https://placehold.co/160x200/d0b8a8/555555?text=Session" class="rounded-2xl object-cover flex-shrink-0" style="width:148px;height:198px;" alt=""/>
+      <!-- Image 2: tall, offset down -->
+      <img src="https://placehold.co/175x250/bfa898/555555?text=Session" class="rounded-2xl object-cover flex-shrink-0 mt-10" style="width:175px;height:252px;" alt=""/>
+      <!-- Image 3: wide, top -->
+      <img src="https://placehold.co/210x210/b09080/555555?text=Session" class="rounded-2xl object-cover flex-shrink-0" style="width:205px;height:208px;" alt=""/>
+      <!-- Image 4: tall, offset down -->
+      <img src="https://placehold.co/170x250/c0a898/555555?text=Session" class="rounded-2xl object-cover flex-shrink-0 mt-10" style="width:170px;height:252px;" alt=""/>
+      <!-- Image 5: short, top -->
+      <img src="https://placehold.co/160x205/cdbdad/555555?text=Session" class="rounded-2xl object-cover flex-shrink-0" style="width:160px;height:205px;" alt=""/>
+      <!-- Image 6: tall, offset down (partially visible) -->
+      <img src="https://placehold.co/175x250/c8b4a4/555555?text=Session" class="rounded-2xl object-cover flex-shrink-0 mt-10" style="width:175px;height:252px;" alt=""/>
+    </div>
+  </div>
+
+  <!-- ── Beige content card (visible in reference below gallery) ── -->
+  <div class="px-8 pb-16">
+    <div class="rounded-3xl p-16" style="background-color:#f8f3ec;min-height:280px;">
+    </div>
+  </div>
+
+  <!-- ── Community Section ── -->
+  <div style="background-color:#4D1840;">
+    <div style="max-width:80rem;margin:0 auto;padding:clamp(3rem,8vw,5rem) clamp(1.25rem,4vw,1.25rem);display:grid;grid-template-columns:1fr 1fr;gap:clamp(2rem,5vw,4rem);align-items:center;">
+
+      <!-- Left: copy -->
+      <div>
+        <div style="font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;color:rgba(255,255,255,0.5);margin-bottom:12px;font-family:'IBM Plex Sans',sans-serif;">New — UFIIN Community</div>
+        <h2 style="font-family:'IBM Plex Serif',serif;font-size:clamp(1.85rem,3vw,2.75rem);font-weight:500;letter-spacing:-0.025em;line-height:1.15;color:white;margin-bottom:16px;">Connect with members <em style="color:#D99AC6;font-style:italic;">in real time</em></h2>
+        <p style="font-size:1.05rem;color:rgba(255,255,255,0.7);line-height:1.75;margin-bottom:32px;font-family:'IBM Plex Sans',sans-serif;">Our members-only chat community is now live. Jump into channels, ask questions, share wins, and talk investing with UFIIN members from around the world.</p>
+        <a href="login.html" style="display:inline-block;background:white;color:#4D1840;font-family:'IBM Plex Sans',sans-serif;font-size:15px;font-weight:700;padding:13px 32px;border-radius:2rem;text-decoration:none;transition:background 0.15s;">Join the conversation →</a>
+      </div>
+
+      <!-- Right: mock chat preview -->
+      <div style="background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.12);border-radius:14px;overflow:hidden;">
+        <div style="background:rgba(0,0,0,0.2);padding:10px 14px;font-size:12px;font-weight:600;color:rgba(255,255,255,0.6);border-bottom:1px solid rgba(255,255,255,0.07);display:flex;align-items:center;gap:8px;font-family:'IBM Plex Sans',sans-serif;">
+          <div style="width:8px;height:8px;border-radius:50%;background:#D99AC6;flex-shrink:0;"></div>
+          # general — UFIIN Community
+        </div>
+        <div style="padding:16px;display:flex;flex-direction:column;gap:12px;">
+          <div style="display:flex;gap:10px;">
+            <div style="width:28px;height:28px;border-radius:50%;background:#8C3085;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:11px;color:white;flex-shrink:0;font-family:'IBM Plex Sans',sans-serif;">A</div>
+            <div>
+              <div style="font-size:12px;font-weight:600;color:rgba(255,255,255,0.85);margin-bottom:3px;font-family:'IBM Plex Sans',sans-serif;">amara</div>
+              <div style="font-size:12px;color:rgba(255,255,255,0.5);line-height:1.5;font-family:'IBM Plex Sans',sans-serif;">Just closed my first ETF position with a 12% gain! 🎉</div>
+            </div>
+          </div>
+          <div style="display:flex;gap:10px;">
+            <div style="width:28px;height:28px;border-radius:50%;background:#4D1840;border:1px solid rgba(255,255,255,0.2);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:11px;color:white;flex-shrink:0;font-family:'IBM Plex Sans',sans-serif;">J</div>
+            <div>
+              <div style="font-size:12px;font-weight:600;color:rgba(255,255,255,0.85);margin-bottom:3px;font-family:'IBM Plex Sans',sans-serif;">jade</div>
+              <div style="font-size:12px;color:rgba(255,255,255,0.5);line-height:1.5;font-family:'IBM Plex Sans',sans-serif;">Amazing!! Which ETF were you holding?</div>
+            </div>
+          </div>
+          <div style="display:flex;gap:10px;">
+            <div style="width:28px;height:28px;border-radius:50%;background:#D99AC6;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:11px;color:#4D1840;flex-shrink:0;font-family:'IBM Plex Sans',sans-serif;">S</div>
+            <div>
+              <div style="font-size:12px;font-weight:600;color:rgba(255,255,255,0.85);margin-bottom:3px;font-family:'IBM Plex Sans',sans-serif;">sofia</div>
+              <div style="font-size:12px;color:rgba(255,255,255,0.5);line-height:1.5;font-family:'IBM Plex Sans',sans-serif;">This community has changed how I think about investing 💜</div>
+            </div>
+          </div>
+          <div style="display:flex;gap:10px;">
+            <div style="width:28px;height:28px;border-radius:50%;background:#6b2460;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:11px;color:white;flex-shrink:0;font-family:'IBM Plex Sans',sans-serif;">P</div>
+            <div>
+              <div style="font-size:12px;font-weight:600;color:rgba(255,255,255,0.85);margin-bottom:3px;font-family:'IBM Plex Sans',sans-serif;">priya</div>
+              <div style="font-size:12px;color:rgba(255,255,255,0.5);line-height:1.5;font-family:'IBM Plex Sans',sans-serif;">Welcome to everyone who just joined from the campus event!</div>
+            </div>
+          </div>
+        </div>
+        <div style="margin:0 12px 12px;background:rgba(0,0,0,0.2);border-radius:8px;padding:10px 14px;font-size:12px;color:rgba(255,255,255,0.3);border:1px solid rgba(255,255,255,0.08);font-family:'IBM Plex Sans',sans-serif;">Message #general…</div>
+      </div>
+
+    </div>
+  </div>
+
+</body>
+</html>

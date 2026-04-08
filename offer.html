@@ -1,0 +1,273 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>UFIIN — What We Offer</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Montserrat:ital,wght@0,700;0,800;0,900;1,700&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --dp: #4D1840; --mp: #8C3085; --pk: #D99AC6; --pl: #fdf0f9;
+      --muted: rgba(77,24,64,0.55); --border: rgba(77,24,64,0.08); --pill: 100px;
+    }
+    html { scroll-behavior: smooth; }
+    body { font-family: 'Inter', sans-serif; background: #fff; color: var(--dp); -webkit-font-smoothing: antialiased; line-height: 1.6; }
+    a { text-decoration: none; color: inherit; }
+    img { display: block; max-width: 100%; }
+
+    /* NAV */
+    nav { position: sticky; top: 0; z-index: 100; background: rgba(255,255,255,0.97); backdrop-filter: blur(12px); border-bottom: 1px solid var(--border); }
+    .nav-inner { max-width: 1200px; margin: 0 auto; padding: 0 32px; height: 88px; display: flex; align-items: center; justify-content: space-between; }
+    .nav-logo { display: flex; align-items: center; }
+    .nav-links { display: flex; align-items: center; gap: 4px; }
+    .nav-link { font-size: 14px; font-weight: 500; color: var(--dp); padding: 8px 18px; border-radius: var(--pill); opacity: 0.6; transition: opacity 0.15s, background 0.15s; }
+    .nav-link:hover { opacity: 1; background: var(--pl); }
+    .nav-link.active { opacity: 1; font-weight: 700; background: var(--pl); }
+    .btn-nav { font-size: 14px; font-weight: 700; color: #fff; background: var(--mp); padding: 10px 24px; border-radius: var(--pill); margin-left: 8px; transition: background 0.15s, transform 0.1s; display: inline-flex; align-items: center; gap: 8px; }
+    .btn-nav:hover { background: var(--dp); transform: translateY(-1px); }
+
+    /* PAGE HEADER */
+    .page-header { background: var(--mp); padding: 80px 32px 72px; }
+    .page-header-inner { max-width: 1200px; margin: 0 auto; }
+    .page-tag { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em; color: rgba(255,255,255,0.55); margin-bottom: 16px; }
+    .page-header h1 { font-family: 'Montserrat', sans-serif; font-size: clamp(2.4rem, 5vw, 3.8rem); font-weight: 900; line-height: 1.1; letter-spacing: -0.025em; color: #fff; max-width: 640px; }
+    .page-header h1 em { font-style: italic; color: var(--pk); }
+    .page-header p { font-size: 1.1rem; color: rgba(255,255,255,0.62); max-width: 520px; margin-top: 18px; line-height: 1.75; }
+
+    /* SHARED */
+    .section { max-width: 1200px; margin: 0 auto; padding: 96px 32px; }
+    @media (max-width: 768px) { .section { padding: 64px 20px; } }
+    .section-label { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em; color: var(--mp); margin-bottom: 14px; }
+    h2 { font-family: 'Montserrat', sans-serif; font-size: clamp(1.9rem, 4vw, 2.7rem); font-weight: 900; letter-spacing: -0.025em; line-height: 1.15; color: var(--dp); margin-bottom: 20px; }
+    h2 em { font-style: italic; color: var(--mp); }
+    .body-text { font-size: 1.05rem; color: var(--muted); line-height: 1.8; }
+    .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: clamp(2.5rem, 5vw, 5rem); align-items: center; }
+    @media (max-width: 768px) { .two-col { grid-template-columns: 1fr; } }
+    .img-wrap { border-radius: 20px; overflow: hidden; }
+    .img-wrap img { width: 100%; height: auto; display: block; }
+
+    /* PILLARS */
+    .pillars-section { background: var(--pl); padding: 80px 32px; }
+    .pillars-inner { max-width: 1200px; margin: 0 auto; }
+    .pillars-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 18px; margin-top: 48px; }
+    @media (max-width: 900px) { .pillars-grid { grid-template-columns: 1fr 1fr; } }
+    @media (max-width: 600px) { .pillars-grid { grid-template-columns: 1fr; } }
+    .pillar { background: #fff; border-radius: 20px; padding: 36px 28px; border: 1px solid rgba(217,154,198,0.2); transition: box-shadow 0.2s, border-color 0.2s; }
+    .pillar:hover { border-color: var(--pk); box-shadow: 0 8px 32px rgba(217,154,198,0.2); }
+    .pillar-icon { width: 52px; height: 52px; border-radius: 14px; background: linear-gradient(135deg, var(--pk), var(--mp)); display: flex; align-items: center; justify-content: center; margin-bottom: 20px; }
+    .pillar-title { font-size: 17px; font-weight: 700; color: var(--dp); margin-bottom: 10px; }
+    .pillar-desc { font-size: 14px; color: var(--muted); line-height: 1.75; }
+
+    /* PHOTO FEATURE */
+    .photo-feature { padding: 80px 32px; }
+    .photo-feature-inner { max-width: 1200px; margin: 0 auto; }
+    .photo-row { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px; margin-top: 40px; }
+    @media (max-width: 768px) { .photo-row { grid-template-columns: 1fr 1fr; } }
+    .photo-item { border-radius: 16px; overflow: hidden; }
+    .photo-item img { width: 100%; height: 260px; object-fit: cover; display: block; transition: transform 0.4s; }
+    .photo-item:hover img { transform: scale(1.04); }
+
+    /* CHAT PREVIEW */
+    .community-section { background: var(--dp); padding: 96px 32px; }
+    .community-inner { max-width: 1200px; margin: 0 auto; display: grid; grid-template-columns: 1fr 1fr; gap: 64px; align-items: center; }
+    @media (max-width: 768px) { .community-inner { grid-template-columns: 1fr; } }
+    .community-inner h2 { color: #fff; }
+    .community-inner h2 em { color: var(--pk); }
+    .comm-label { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em; color: rgba(255,255,255,0.4); margin-bottom: 14px; }
+    .comm-desc { font-size: 1.05rem; color: rgba(255,255,255,0.6); line-height: 1.8; }
+    .chat-preview { background: rgba(255,255,255,0.07); border: 1px solid rgba(255,255,255,0.1); border-radius: 18px; overflow: hidden; }
+    .cp-header { background: rgba(0,0,0,0.2); padding: 12px 16px; display: flex; align-items: center; gap: 10px; border-bottom: 1px solid rgba(255,255,255,0.07); }
+    .cp-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--pk); flex-shrink: 0; }
+    .cp-channel { font-size: 12px; font-weight: 600; color: rgba(255,255,255,0.55); }
+    .cp-online { margin-left: auto; font-size: 11px; color: rgba(255,255,255,0.35); display: flex; align-items: center; gap: 5px; }
+    .cp-online-dot { width: 6px; height: 6px; border-radius: 50%; background: #4ade80; }
+    .cp-msgs { padding: 16px; display: flex; flex-direction: column; gap: 14px; }
+    .cp-msg { display: flex; gap: 10px; }
+    .cp-av { width: 30px; height: 30px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 11px; color: white; flex-shrink: 0; }
+    .cp-name { font-size: 12px; font-weight: 700; color: rgba(255,255,255,0.8); margin-bottom: 3px; }
+    .cp-text { font-size: 12px; color: rgba(255,255,255,0.45); line-height: 1.55; }
+    .cp-input { margin: 0 14px 14px; background: rgba(0,0,0,0.2); border: 1px solid rgba(255,255,255,0.07); border-radius: 10px; padding: 10px 14px; font-size: 12px; color: rgba(255,255,255,0.25); display: flex; align-items: center; justify-content: space-between; }
+
+    /* FOOTER */
+    footer { background: #2d0e25; padding: 52px 32px; }
+    .footer-inner { max-width: 1200px; margin: 0 auto; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 24px; }
+    .footer-logo { display: flex; align-items: center; gap: 10px; font-family: 'Montserrat', sans-serif; font-weight: 800; font-size: 15px; color: rgba(255,255,255,0.6); }
+    .footer-links { display: flex; gap: 24px; flex-wrap: wrap; }
+    .footer-link { font-size: 13px; font-weight: 500; color: rgba(255,255,255,0.32); transition: color 0.15s; }
+    .footer-link:hover { color: rgba(255,255,255,0.7); }
+    .footer-copy { font-size: 12px; color: rgba(255,255,255,0.18); }
+  </style>
+</head>
+<body>
+
+  <nav>
+    <div class="nav-inner">
+      <a href="community.html" class="nav-logo">
+        <img src="https://ufiinsin.com/wp-content/uploads/2026/02/Logo-300x280.png" alt="UFIIN Logo" style="height:80px;width:auto;">
+      </a>
+      <div class="nav-links">
+        <a href="community.html" class="nav-link">Home</a>
+        <a href="about.html" class="nav-link">About</a>
+        <a href="offer.html" class="nav-link active">What We Offer</a>
+        <a href="login.html" class="btn-nav">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>
+          Open Community
+        </a>
+      </div>
+    </div>
+  </nav>
+
+  <!-- PAGE HEADER -->
+  <div class="page-header">
+    <div class="page-header-inner">
+      <div class="page-tag">What We Offer</div>
+      <h1>Everything you need<br>to <em>grow</em> as an investor</h1>
+      <p>From peer support to professional development — UFIIN gives you the tools, connections, and community to thrive in finance.</p>
+    </div>
+  </div>
+
+  <!-- INTRO WITH PHOTO -->
+  <div class="section">
+    <div class="two-col">
+      <div>
+        <div class="section-label">Our Community Platform</div>
+        <h2>More than a chat app — a <em>career launchpad</em></h2>
+        <p class="body-text">UFIIN is a place where female student investors come together to learn, share, and grow. Our members-only community gives you access to real conversations with peers who understand exactly what you're going through.</p>
+        <p class="body-text" style="margin-top:16px;">Whether you're building your first portfolio or preparing for investment banking interviews, there's a channel for you.</p>
+      </div>
+      <div class="img-wrap">
+        <img src="https://ufiinsin.com/wp-content/uploads/2026/03/image_10-1024x768.jpg" alt="UFIIN members">
+      </div>
+    </div>
+  </div>
+
+  <!-- PILLARS -->
+  <div class="pillars-section">
+    <div class="pillars-inner">
+      <div class="section-label">Core Offerings</div>
+      <h2>What you get<br>when you <em>join</em></h2>
+      <div class="pillars-grid">
+        <div class="pillar">
+          <div class="pillar-icon">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75"/></svg>
+          </div>
+          <div class="pillar-title">Peer Community</div>
+          <div class="pillar-desc">Connect with female student investors from universities around the world. Ask freely, share openly, and grow together in a judgment-free space.</div>
+        </div>
+        <div class="pillar">
+          <div class="pillar-icon">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+          </div>
+          <div class="pillar-title">Investment Growth</div>
+          <div class="pillar-desc">Share strategies, discuss markets, and learn from peers navigating the same journey. Real talk about stocks, ETFs, portfolios, and more.</div>
+        </div>
+        <div class="pillar">
+          <div class="pillar-icon">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07A19.5 19.5 0 013.07 8.63 19.79 19.79 0 012 2h3a2 2 0 012 1.72c.127.96.361 1.903.7 2.81a2 2 0 01-.45 2.11L6.09 7.91a16 16 0 006 6l1.27-1.27a2 2 0 012.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0122 16.92z"/></svg>
+          </div>
+          <div class="pillar-title">Professional Network</div>
+          <div class="pillar-desc">Build lasting connections with future leaders in finance, investment banking, and wealth management from 40+ universities globally.</div>
+        </div>
+        <div class="pillar">
+          <div class="pillar-icon">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+          </div>
+          <div class="pillar-title">Mentorship & Support</div>
+          <div class="pillar-desc">No judgment, no gatekeeping. Beginners and advanced investors thrive side by side, supporting each other's goals at every level.</div>
+        </div>
+        <div class="pillar">
+          <div class="pillar-icon">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
+          </div>
+          <div class="pillar-title">Real-Time Discussions</div>
+          <div class="pillar-desc">Live community channels keep you connected in real time — market updates, news, interview tips, and conversations happening right now.</div>
+        </div>
+        <div class="pillar">
+          <div class="pillar-icon">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 014 10 15.3 15.3 0 01-4 10 15.3 15.3 0 01-4-10 15.3 15.3 0 014-10z"/></svg>
+          </div>
+          <div class="pillar-title">Global Reach</div>
+          <div class="pillar-desc">Members from 12+ countries. Whether you're in New York, London, Lagos, or Toronto — UFIIN connects you to a truly global cohort of women in finance.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- PHOTOS -->
+  <div class="photo-feature">
+    <div class="photo-feature-inner">
+      <div class="section-label">See It In Action</div>
+      <h2>Our members,<br>our <em>moments</em></h2>
+      <div class="photo-row">
+        <div class="photo-item">
+          <img src="https://ufiinsin.com/wp-content/uploads/2026/02/image_4-3-1024x630.jpg" alt="Community members">
+        </div>
+        <div class="photo-item">
+          <img src="https://ufiinsin.com/wp-content/uploads/2026/03/image_13.jpg" alt="UFIIN networking">
+        </div>
+        <div class="photo-item">
+          <img src="https://ufiinsin.com/wp-content/uploads/2026/03/100_0446-scaled.jpeg" alt="UFIIN event">
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- COMMUNITY CTA + CHAT PREVIEW -->
+  <div class="community-section">
+    <div class="community-inner">
+      <div>
+        <div class="comm-label">Members-Only Platform</div>
+        <h2>Ready to join the<br><em>conversation?</em></h2>
+        <p class="comm-desc" style="margin-top:16px;margin-bottom:0;">Our real-time community chat is live now. Use the button at the top to open the community and sign up for free.</p>
+      </div>
+      <div class="chat-preview">
+        <div class="cp-header">
+          <div class="cp-dot"></div>
+          <div class="cp-channel"># general</div>
+          <div class="cp-online"><div class="cp-online-dot"></div>24 online</div>
+        </div>
+        <div class="cp-msgs">
+          <div class="cp-msg">
+            <div class="cp-av" style="background:#8C3085;">A</div>
+            <div><div class="cp-name">amara_invests</div><div class="cp-text">Just closed my first ETF position with a 12% gain! 🎉</div></div>
+          </div>
+          <div class="cp-msg">
+            <div class="cp-av" style="background:#6b2460;">J</div>
+            <div><div class="cp-name">jade.finance</div><div class="cp-text">Congrats!! Which ETF? I'm looking at VTI right now</div></div>
+          </div>
+          <div class="cp-msg">
+            <div class="cp-av" style="background:#D99AC6;color:#4D1840;">S</div>
+            <div><div class="cp-name">sofia_r</div><div class="cp-text">This community has genuinely changed how I think about investing 💜</div></div>
+          </div>
+          <div class="cp-msg">
+            <div class="cp-av" style="background:#4D1840;border:1px solid rgba(255,255,255,0.2);">P</div>
+            <div><div class="cp-name">priya.k</div><div class="cp-text">Welcome to the new members from today's campus event! 👋</div></div>
+          </div>
+        </div>
+        <div class="cp-input">
+          <span>Message #general…</span>
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.2)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <footer>
+    <div class="footer-inner">
+      <div class="footer-logo">
+        <img src="https://ufiinsin.com/wp-content/uploads/2026/02/Logo-300x280.png" alt="UFIIN Logo" style="height:40px;width:auto;filter:brightness(0) invert(1);">
+        UFIIN
+      </div>
+      <div class="footer-links">
+        <a href="community.html" class="footer-link">Home</a>
+        <a href="about.html" class="footer-link">About</a>
+        <a href="offer.html" class="footer-link">What We Offer</a>
+      </div>
+      <div class="footer-copy">© 2026 UFIIN. All rights reserved.</div>
+    </div>
+  </footer>
+
+</body>
+</html>

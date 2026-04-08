@@ -1,0 +1,463 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>UFIIN — Sign In</title>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,400&family=Montserrat:wght@700;800;900&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --color-background:  #ffffff;
+      --color-foreground:  #4D1840;
+      --color-primary:     #8C3085;
+      --color-secondary:   #4D1840;
+      --color-tertiary:    #fdf0f9;
+      --color-accent:      #D99AC6;
+      --color-green:       #00d084;
+      --color-danger:      #cf2e2e;
+      --btn-radius:        2rem;
+      --input-radius:      4px;
+      --font-body:         "Inter", sans-serif;
+    }
+
+    html, body { height: 100%; }
+
+    body {
+      font-family: var(--font-body);
+      font-size: 16px;
+      line-height: 1.6;
+      background: var(--color-background);
+      color: var(--color-foreground);
+      display: flex;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    a { color: var(--color-primary); text-decoration: none; }
+    a:hover { text-decoration: underline; }
+
+    /* ── LEFT PANEL ── */
+    .left-panel {
+      flex: 1;
+      background: var(--color-secondary);
+      color: white;
+      display: none;
+      flex-direction: column;
+      justify-content: center;
+      padding: clamp(40px, 6vw, 80px);
+      position: relative;
+      overflow: hidden;
+    }
+
+    @media (min-width: 800px) { .left-panel { display: flex; } }
+
+    .left-panel::before {
+      content: '';
+      position: absolute;
+      width: 500px; height: 500px;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(140,48,133,0.5) 0%, transparent 70%);
+      top: -80px; right: -100px;
+      pointer-events: none;
+    }
+
+    .left-panel::after {
+      content: '';
+      position: absolute;
+      width: 300px; height: 300px;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(217,154,198,0.25) 0%, transparent 70%);
+      bottom: 40px; left: 5%;
+      pointer-events: none;
+    }
+
+    .left-content { position: relative; z-index: 1; max-width: 400px; }
+
+    .left-logo {
+      display: flex; align-items: center; gap: 10px;
+      text-decoration: none; margin-bottom: 56px;
+    }
+
+    .logo-mark {
+      width: 40px; height: 40px;
+      background: rgba(255,255,255,0.15);
+      border-radius: 10px;
+      display: flex; align-items: center; justify-content: center;
+      font-weight: 900; font-size: 18px; color: white;
+      flex-shrink: 0;
+    }
+
+    .logo-name { font-size: 20px; font-weight: 700; color: white; letter-spacing: -0.02em; }
+
+    .left-content h2 {
+      font-size: clamp(1.75rem, 3vw, 2.5rem);
+      font-weight: 800;
+      letter-spacing: -0.025em;
+      line-height: 1.2;
+      margin-bottom: 14px;
+      color: white;
+    }
+
+    .left-content h2 em { font-style: italic; color: #D99AC6; }
+
+    .left-content p {
+      font-size: 15px;
+      color: rgba(255,255,255,0.65);
+      line-height: 1.7;
+      margin-bottom: 36px;
+    }
+
+    .testimonial {
+      background: rgba(255,255,255,0.07);
+      border: 1px solid rgba(255,255,255,0.12);
+      border-radius: 12px;
+      padding: 20px 22px;
+    }
+
+    .testimonial-text {
+      font-size: 14px;
+      color: rgba(255,255,255,0.75);
+      line-height: 1.7;
+      font-style: italic;
+      margin-bottom: 14px;
+    }
+
+    .testimonial-author { display: flex; align-items: center; gap: 10px; }
+
+    .t-avatar {
+      width: 32px; height: 32px; border-radius: 50%;
+      background: var(--color-primary);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 13px; font-weight: 700; color: white; flex-shrink: 0;
+    }
+
+    .t-name { font-size: 13px; font-weight: 600; color: white; }
+    .t-handle { font-size: 12px; color: rgba(255,255,255,0.4); }
+
+    /* ── RIGHT PANEL ── */
+    .right-panel {
+      width: 100%;
+      max-width: 480px;
+      min-width: 320px;
+      background: var(--color-background);
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      padding: clamp(32px, 5vw, 60px) clamp(28px, 5vw, 56px);
+      overflow-y: auto;
+    }
+
+    .back-link {
+      display: inline-flex; align-items: center; gap: 6px;
+      font-size: 13px; font-weight: 500;
+      color: rgba(11,6,32,0.45);
+      text-decoration: none;
+      margin-bottom: 40px;
+      transition: color 0.15s;
+    }
+    .back-link:hover { color: var(--color-foreground); text-decoration: none; }
+
+    /* Mobile logo */
+    .mobile-logo {
+      display: flex; align-items: center; gap: 10px;
+      margin-bottom: 32px; text-decoration: none;
+    }
+    .mobile-logo .logo-mark { background: var(--color-primary); }
+    .mobile-logo .logo-name { color: var(--color-foreground); }
+    @media (min-width: 800px) { .mobile-logo { display: none; } }
+
+    /* Tabs */
+    .tab-bar {
+      display: flex;
+      background: var(--color-tertiary);
+      border-radius: 10px;
+      padding: 4px;
+      margin-bottom: 28px;
+    }
+
+    .tab-btn {
+      flex: 1;
+      padding: 9px;
+      border: none;
+      border-radius: 7px;
+      background: none;
+      color: rgba(11,6,32,0.4);
+      font-family: var(--font-body);
+      font-size: 14px; font-weight: 600;
+      cursor: pointer;
+      transition: background 0.15s, color 0.15s;
+    }
+
+    .tab-btn.active {
+      background: var(--color-primary);
+      color: white;
+    }
+
+    /* Form title */
+    .form-title {
+      font-size: 1.5rem;
+      font-weight: 800;
+      letter-spacing: -0.02em;
+      color: var(--color-foreground);
+      margin-bottom: 6px;
+    }
+
+    .form-subtitle {
+      font-size: 14px;
+      color: rgba(11,6,32,0.5);
+      margin-bottom: 28px;
+    }
+
+    /* Form fields */
+    .form-group { margin-bottom: 18px; }
+
+    label {
+      display: block;
+      font-size: 13px; font-weight: 600;
+      color: var(--color-foreground);
+      margin-bottom: 6px;
+    }
+
+    input[type="text"],
+    input[type="email"],
+    input[type="password"] {
+      width: 100%;
+      background: var(--color-background);
+      border: 1px solid var(--color-foreground);
+      border-radius: var(--input-radius);
+      color: var(--color-foreground);
+      font-family: var(--font-body);
+      font-size: 1.05rem;
+      padding: calc(0.667em + 1px) calc(1.333em + 1px);
+      outline: none;
+      transition: border-color 0.15s, box-shadow 0.15s;
+      line-height: 1.384;
+    }
+
+    input:focus {
+      border-color: var(--color-primary);
+      box-shadow: 0 0 0 1.5px var(--color-primary);
+    }
+
+    input::placeholder { color: rgba(11,6,32,0.3); }
+
+    /* Submit button */
+    .submit-btn {
+      width: 100%;
+      padding: 13px;
+      border: none;
+      border-radius: var(--btn-radius);
+      background: var(--color-primary);
+      color: white;
+      font-family: var(--font-body);
+      font-size: 15px; font-weight: 700;
+      cursor: pointer;
+      margin-top: 8px;
+      transition: background 0.15s, transform 0.1s;
+    }
+    .submit-btn:hover { background: var(--color-foreground); transform: translateY(-1px); }
+    .submit-btn:active { transform: translateY(0); }
+    .submit-btn:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+
+    /* Alerts */
+    .alert {
+      padding: 11px 14px;
+      border-radius: var(--input-radius);
+      font-size: 13px; font-weight: 500;
+      margin-bottom: 18px;
+      display: none;
+      line-height: 1.5;
+    }
+    .alert.show { display: block; }
+    .alert-error { background: #fef2f2; border: 1px solid #fecaca; color: var(--color-danger); }
+    .alert-success { background: #f0fdf4; border: 1px solid #bbf7d0; color: #15803d; }
+
+    /* Spinner */
+    .spinner-inline {
+      display: inline-block;
+      width: 13px; height: 13px;
+      border: 2px solid rgba(255,255,255,0.35);
+      border-top-color: white;
+      border-radius: 50%;
+      animation: spin 0.7s linear infinite;
+      vertical-align: middle;
+      margin-right: 6px;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+  </style>
+</head>
+<body>
+
+  <!-- Left Panel -->
+  <div class="left-panel">
+    <div class="left-content">
+      <a href="community.html" class="left-logo">
+        <img src="https://ufiinsin.com/wp-content/uploads/2026/02/Logo-300x280.png" alt="UFIIN Logo" style="height:92px;width:auto;filter:brightness(0) invert(1);">
+      </a>
+      <h2>Connect with<br><em>investors like you</em></h2>
+      <p>Join a global network of university women in finance. Share insights, ask questions, and grow your investing journey together.</p>
+      <div class="testimonial">
+        <div class="testimonial-text">"UFIIN has completely changed how I approach investing. Being surrounded by driven women who share knowledge freely is everything."</div>
+        <div class="testimonial-author">
+          <div class="t-avatar">M</div>
+          <div>
+            <div class="t-name">Morgan K.</div>
+            <div class="t-handle">Community Member</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Right Panel -->
+  <div class="right-panel">
+    <a href="community.html" class="back-link">← Back to UFIIN</a>
+
+    <!-- Mobile logo -->
+    <a href="community.html" class="mobile-logo">
+      <img src="https://ufiinsin.com/wp-content/uploads/2026/02/Logo-300x280.png" alt="UFIIN Logo" style="height:60px;width:auto;">
+    </a>
+
+    <!-- Tabs -->
+    <div class="tab-bar">
+      <button class="tab-btn active" id="loginTab" onclick="switchTab('login')">Sign in</button>
+      <button class="tab-btn" id="signupTab" onclick="switchTab('signup')">Create account</button>
+    </div>
+
+    <!-- Alert -->
+    <div class="alert" id="alertBox"></div>
+
+    <!-- LOGIN -->
+    <div id="loginForm">
+      <div class="form-title">Welcome back</div>
+      <div class="form-subtitle">Don't have an account? <a href="#" onclick="switchTab('signup')">Sign up free</a></div>
+      <div class="form-group">
+        <label for="loginEmail">Email</label>
+        <input type="email" id="loginEmail" placeholder="you@university.edu" autocomplete="email">
+      </div>
+      <div class="form-group">
+        <label for="loginPassword">Password</label>
+        <input type="password" id="loginPassword" placeholder="Your password" autocomplete="current-password">
+      </div>
+      <button class="submit-btn" id="loginBtn" onclick="handleLogin()">Sign in</button>
+    </div>
+
+    <!-- SIGNUP -->
+    <div id="signupForm" style="display:none;">
+      <div class="form-title">Create account</div>
+      <div class="form-subtitle">Already have an account? <a href="#" onclick="switchTab('login')">Sign in</a></div>
+      <div class="form-group">
+        <label for="signupUsername">Username</label>
+        <input type="text" id="signupUsername" placeholder="e.g. amara_invests" autocomplete="username" maxlength="30">
+      </div>
+      <div class="form-group">
+        <label for="signupEmail">Email</label>
+        <input type="email" id="signupEmail" placeholder="you@university.edu" autocomplete="email">
+      </div>
+      <div class="form-group">
+        <label for="signupPassword">Password</label>
+        <input type="password" id="signupPassword" placeholder="At least 6 characters" autocomplete="new-password">
+      </div>
+      <button class="submit-btn" id="signupBtn" onclick="handleSignup()">Create account</button>
+    </div>
+  </div>
+
+  <script>
+    // ============================================================
+    // CONFIGURATION — Replace with your Supabase project details
+    // ============================================================
+    const SUPABASE_URL = 'https://deegqrsblgcbvdatuaid.supabase.co'
+    const SUPABASE_ANON_KEY = 'sb_publishable_ux0RP7LLcrMFsJhL3AXwkA_C-92Zrh9'
+    // ============================================================
+
+    const { createClient } = supabase
+    const sb = createClient(SUPABASE_URL, SUPABASE_ANON_KEY)
+
+    sb.auth.getSession().then(({ data: { session } }) => {
+      if (session) window.location.href = 'app.html'
+    })
+
+    const params = new URLSearchParams(window.location.search)
+    if (params.get('tab') === 'signup') switchTab('signup')
+
+    function switchTab(tab) {
+      const isLogin = tab === 'login'
+      document.getElementById('loginTab').classList.toggle('active', isLogin)
+      document.getElementById('signupTab').classList.toggle('active', !isLogin)
+      document.getElementById('loginForm').style.display = isLogin ? 'block' : 'none'
+      document.getElementById('signupForm').style.display = isLogin ? 'none' : 'block'
+      hideAlert()
+    }
+
+    function showAlert(msg, type) {
+      const el = document.getElementById('alertBox')
+      el.textContent = msg
+      el.className = `alert alert-${type} show`
+    }
+
+    function hideAlert() {
+      document.getElementById('alertBox').className = 'alert'
+    }
+
+    function setLoading(btnId, loading, label) {
+      const btn = document.getElementById(btnId)
+      btn.disabled = loading
+      btn.innerHTML = loading ? `<span class="spinner-inline"></span>${label}` : label
+    }
+
+    async function handleLogin() {
+      const email    = document.getElementById('loginEmail').value.trim()
+      const password = document.getElementById('loginPassword').value
+      if (!email || !password) { showAlert('Please enter your email and password.', 'error'); return }
+
+      setLoading('loginBtn', true, 'Signing in…')
+      hideAlert()
+
+      const { error } = await sb.auth.signInWithPassword({ email, password })
+      if (error) {
+        setLoading('loginBtn', false, 'Sign in')
+        showAlert(error.message || 'Login failed. Please check your credentials.', 'error')
+        return
+      }
+      window.location.href = 'app.html'
+    }
+
+    async function handleSignup() {
+      const username = document.getElementById('signupUsername').value.trim()
+      const email    = document.getElementById('signupEmail').value.trim()
+      const password = document.getElementById('signupPassword').value
+
+      if (!username || !email || !password) { showAlert('Please fill in all fields.', 'error'); return }
+      if (username.length < 2) { showAlert('Username must be at least 2 characters.', 'error'); return }
+      if (password.length < 6) { showAlert('Password must be at least 6 characters.', 'error'); return }
+
+      setLoading('signupBtn', true, 'Creating account…')
+      hideAlert()
+
+      const { data, error } = await sb.auth.signUp({
+        email, password,
+        options: { data: { username } }
+      })
+
+      setLoading('signupBtn', false, 'Create account')
+
+      if (error) { showAlert(error.message || 'Sign up failed. Please try again.', 'error'); return }
+
+      if (data.session) { window.location.href = 'app.html'; return }
+
+      showAlert('Account created! Check your email to confirm, then sign in.', 'success')
+      setTimeout(() => switchTab('login'), 2500)
+    }
+
+    document.addEventListener('keydown', e => {
+      if (e.key !== 'Enter') return
+      const loginVisible = document.getElementById('loginForm').style.display !== 'none'
+      if (loginVisible) handleLogin()
+      else handleSignup()
+    })
+  </script>
+</body>
+</html>
