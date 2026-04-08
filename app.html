@@ -1242,6 +1242,8 @@
       }
       await loadPinnedMessages()
       renderAllMessages()
+      const pinnedPanel = document.getElementById('tab-pinned')
+      if (pinnedPanel.classList.contains('active')) renderPinnedPanel()
     }
 
     document.getElementById('pinnedBanner').addEventListener('click', () => {
@@ -1479,23 +1481,38 @@
     })
 
     // ── Pinned panel ──
-    function renderPinnedPanel() {
+    async function renderPinnedPanel() {
       const el = document.getElementById('pinnedItems')
-      if (!pinnedMessages.length) {
+      el.innerHTML = `<div class="rp-empty"><div class="rp-empty-icon" style="font-size:20px;">⏳</div>Loading…</div>`
+
+      const { data, error } = await sb
+        .from('pinned_messages')
+        .select('message_id, created_at, messages(id, content, created_at, user_id)')
+        .eq('channel_id', currentChannel.id)
+        .order('created_at', { ascending: false })
+
+      if (error || !data || !data.length) {
         el.innerHTML = `<div class="rp-empty"><div class="rp-empty-icon">📌</div>No pinned messages yet.<br>Hover a message and click 📌 to pin it.</div>`
         return
       }
-      el.innerHTML = pinnedMessages.map(pin => {
-        const msg = messages.find(m => m.id === pin.message_id)
+
+      // Collect unique user IDs to fetch usernames
+      const userIds = [...new Set(data.map(p => p.messages?.user_id).filter(Boolean))]
+      const { data: profiles } = await sb.from('profiles').select('id, username').in('id', userIds)
+      const profileMap = {}
+      ;(profiles || []).forEach(p => profileMap[p.id] = p.username)
+
+      el.innerHTML = data.map(pin => {
+        const msg = pin.messages
         if (!msg) return ''
-        const author = msg.profiles?.username || 'Unknown'
+        const author = profileMap[msg.user_id] || 'Unknown'
         return `
-          <div class="side-card" onclick="jumpToMessage('${pin.message_id}')">
+          <div class="side-card" onclick="jumpToMessage('${msg.id}')">
             <div class="side-card-author">${escHtml(author)}</div>
             <div class="side-card-text">${escHtml(msg.content)}</div>
             <div class="side-card-time">${fmtTime(msg.created_at)}</div>
             <div class="side-card-actions">
-              <button class="side-card-remove" onclick="event.stopPropagation();togglePin('${pin.message_id}')">Unpin</button>
+              <button class="side-card-remove" onclick="event.stopPropagation();togglePin('${msg.id}')">Unpin</button>
             </div>
           </div>`
       }).join('')
