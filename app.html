@@ -585,22 +585,6 @@
     }
     .ep-btn:hover { background: var(--ios-fill); }
 
-    /* ── PINNED BADGE ── */
-    .pinned-badge {
-      display: inline-flex; align-items: center; gap: 4px;
-      font-size: 11px; color: var(--ios-gray); margin-bottom: 2px;
-    }
-
-    /* ── PINNED BANNER ── */
-    #pinnedBanner {
-      display: none; align-items: center; gap: 10px;
-      padding: 8px 16px;
-      background: rgba(255,204,0,0.1);
-      border-bottom: 1px solid rgba(255,204,0,0.3);
-      font-size: 13px; color: var(--ios-label2);
-      cursor: pointer; flex-shrink: 0;
-    }
-    #pinnedBanner.show { display: flex; }
 
     /* ── TOAST ── */
     #toast {
@@ -684,13 +668,6 @@
         <span class="chat-desc" id="chatDesc"></span>
       </div>
 
-      <!-- Pinned message banner -->
-      <div id="pinnedBanner">
-        <span>📌</span>
-        <span id="pinnedText">Pinned message</span>
-        <span style="margin-left:auto;font-size:11px;color:var(--ios-gray);">Click to view</span>
-      </div>
-
       <div class="messages-wrap" id="messagesWrap">
         <div class="msg-spacer"></div>
         <div class="channel-welcome" id="channelWelcome">
@@ -727,7 +704,6 @@
     <div class="right-panel">
       <div class="rp-tabs">
         <button class="rp-tab active" data-tab="members">Members</button>
-        <button class="rp-tab" data-tab="pinned">Pinned</button>
         <button class="rp-tab" data-tab="favorites">Favorites</button>
       </div>
 
@@ -735,11 +711,6 @@
       <div class="rp-panel active" id="tab-members">
         <div class="member-section-title">Online — <span id="onlineCount">0</span></div>
         <div id="memberItems"></div>
-      </div>
-
-      <!-- Pinned tab -->
-      <div class="rp-panel" id="tab-pinned">
-        <div id="pinnedItems"></div>
       </div>
 
       <!-- Favorites tab -->
@@ -789,7 +760,6 @@
     let reactionsSub   = null
     let reactionsCache = {}   // msgId → [{emoji, users:[]}]
     let replyingTo     = null // {id, author, content}
-    let pinnedMessages = []
     let favoritesCache = new Set() // set of message_ids the current user has favorited
     let allFavorites   = []        // full favorite objects for the panel
 
@@ -933,8 +903,7 @@
       document.getElementById('welcomeSub').textContent = `This is the start of the #${ch.name} channel.`
 
       await loadMessages()
-      try { await loadPinnedMessages() } catch(e) { console.warn('pins:', e) }
-      try { await loadReactions() } catch(e) { console.warn('reactions:', e) }
+try { await loadReactions() } catch(e) { console.warn('reactions:', e) }
       try { await loadFavorites() } catch(e) { console.warn('favorites:', e) }
 
       // Resubscribe
@@ -1052,7 +1021,6 @@
       const author  = msg.profiles?.username || 'Unknown'
       const color   = avatarColor(msg.user_id)
       const ini     = initials(author)
-      const isPinned = pinnedMessages.some(p => p.message_id === msg.id)
       const replyMsg = msg.reply_to_content ? `
         <div class="reply-preview" data-jumpto="${escHtml(msg.reply_to_id||'')}">
           <div>
@@ -1068,7 +1036,6 @@
           </div>
           <button class="msg-action-btn" title="React" onclick="toggleEmojiPicker('${msg.id}')">😊</button>
           <button class="msg-action-btn" title="Reply" onclick="startReply('${msg.id}','${escHtml(author)}')">↩</button>
-          <button class="msg-action-btn" title="${isPinned?'Unpin':'Pin'}" onclick="togglePin('${msg.id}')">📌</button>
           <button class="msg-action-btn" title="Favorite" onclick="toggleFavorite('${msg.id}')" id="fav-btn-${msg.id}" style="${favoritesCache.has('${msg.id}') ? 'color:#ff9500;' : ''}">⭐</button>
         </div>`
 
@@ -1077,7 +1044,6 @@
           ${actionsHtml}
           <div class="msg-avatar" style="background:${color};">${ini}</div>
           <div class="msg-body">
-            ${isPinned ? '<div class="pinned-badge">📌 Pinned</div>' : ''}
             <div class="msg-header">
               <span class="msg-author" style="color:${color};">${escHtml(author)}</span>
               <span class="msg-time">${fmtTime(msg.created_at)}</span>
@@ -1208,52 +1174,6 @@
       document.getElementById('replyBar').classList.remove('open')
     })
 
-    // ── Pin / Unpin ──
-    async function loadPinnedMessages() {
-      const { data, error } = await sb.from('pinned_messages')
-        .select('message_id, channel_id, created_at')
-        .eq('channel_id', currentChannel.id)
-        .order('created_at', { ascending: false })
-      if (error) { console.warn('loadPinnedMessages:', error); return }
-      pinnedMessages = data || []
-      const banner = document.getElementById('pinnedBanner')
-      if (pinnedMessages.length) {
-        // Look up the message content from already-loaded messages
-        const pin = pinnedMessages[0]
-        const msg = messages.find(m => m.id === pin.message_id)
-        const preview = msg?.content?.slice(0, 60) || 'Pinned message'
-        document.getElementById('pinnedText').textContent = `"${preview}${(msg?.content?.length||0)>=60?'…':''}"`
-        banner.classList.add('show')
-      } else {
-        banner.classList.remove('show')
-      }
-    }
-
-    async function togglePin(msgId) {
-      // Always check DB — never trust local cache for this
-      const { data: existing } = await sb.from('pinned_messages').select('id').eq('message_id', msgId).maybeSingle()
-      if (existing) {
-        const { error } = await sb.from('pinned_messages').delete().eq('message_id', msgId)
-        if (error) { showToast('Pin error: ' + error.message); return }
-        showToast('Message unpinned')
-      } else {
-        const { error } = await sb.from('pinned_messages').insert({ message_id: msgId, channel_id: currentChannel.id, pinned_by: currentUser.id })
-        if (error) { showToast('Pin error: ' + error.message); return }
-        showToast('Message pinned 📌')
-      }
-      await loadPinnedMessages()
-      renderAllMessages()
-      const pinnedPanel = document.getElementById('tab-pinned')
-      if (pinnedPanel.classList.contains('active')) renderPinnedPanel()
-    }
-
-    document.getElementById('pinnedBanner').addEventListener('click', () => {
-      if (pinnedMessages.length) {
-        const pin = pinnedMessages[0]
-        const target = document.querySelector(`[data-msg-id="${pin.message_id}"]`)
-        if (target) { target.scrollIntoView({ behavior:'smooth', block:'center' }); target.style.background='rgba(255,204,0,0.15)'; setTimeout(()=>target.style.background='',1400) }
-      }
-    })
 
     // ── Realtime messages ──
     function subscribeMessages() {
@@ -1476,50 +1396,11 @@
         document.querySelectorAll('.rp-panel').forEach(p => p.classList.remove('active'))
         tab.classList.add('active')
         document.getElementById('tab-' + tab.dataset.tab).classList.add('active')
-        if (tab.dataset.tab === 'pinned') renderPinnedPanel()
         if (tab.dataset.tab === 'favorites') renderFavoritesPanel()
       })
     })
 
-    // ── Pinned panel ──
-    async function renderPinnedPanel() {
-      const el = document.getElementById('pinnedItems')
-      el.innerHTML = `<div class="rp-empty"><div class="rp-empty-icon" style="font-size:20px;">⏳</div>Loading…</div>`
-
-      const { data, error } = await sb
-        .from('pinned_messages')
-        .select('message_id, created_at, messages(id, content, created_at, user_id)')
-        .eq('channel_id', currentChannel.id)
-        .order('created_at', { ascending: false })
-
-      if (error || !data || !data.length) {
-        el.innerHTML = `<div class="rp-empty"><div class="rp-empty-icon">📌</div>No pinned messages yet.<br>Hover a message and click 📌 to pin it.</div>`
-        return
-      }
-
-      // Collect unique user IDs to fetch usernames
-      const userIds = [...new Set(data.map(p => p.messages?.user_id).filter(Boolean))]
-      const { data: profiles } = await sb.from('profiles').select('id, username').in('id', userIds)
-      const profileMap = {}
-      ;(profiles || []).forEach(p => profileMap[p.id] = p.username)
-
-      el.innerHTML = data.map(pin => {
-        const msg = pin.messages
-        if (!msg) return ''
-        const author = profileMap[msg.user_id] || 'Unknown'
-        return `
-          <div class="side-card" onclick="jumpToMessage('${msg.id}')">
-            <div class="side-card-author">${escHtml(author)}</div>
-            <div class="side-card-text">${escHtml(msg.content)}</div>
-            <div class="side-card-time">${fmtTime(msg.created_at)}</div>
-            <div class="side-card-actions">
-              <button class="side-card-remove" onclick="event.stopPropagation();togglePin('${msg.id}')">Unpin</button>
-            </div>
-          </div>`
-      }).join('')
-    }
-
-    function jumpToMessage(msgId) {
+function jumpToMessage(msgId) {
       const target = document.querySelector(`[data-msg-id="${msgId}"]`)
       if (target) {
         target.scrollIntoView({ behavior: 'smooth', block: 'center' })
