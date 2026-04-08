@@ -1230,8 +1230,9 @@
     }
 
     async function togglePin(msgId) {
-      const isAlreadyPinned = pinnedMessages.some(p => p.message_id === msgId)
-      if (isAlreadyPinned) {
+      // Always check DB — never trust local cache for this
+      const { data: existing } = await sb.from('pinned_messages').select('id').eq('message_id', msgId).maybeSingle()
+      if (existing) {
         const { error } = await sb.from('pinned_messages').delete().eq('message_id', msgId)
         if (error) { showToast('Pin error: ' + error.message); return }
         showToast('Message unpinned')
