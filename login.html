@@ -408,6 +408,11 @@
       btn.innerHTML = loading ? `<span class="spinner-inline"></span>${label}` : label
     }
 
+    function isEduEmail(email) {
+      return email.toLowerCase().endsWith('.edu') ||
+             email.toLowerCase().match(/\.edu\.[a-z]{2}$/) // e.g. .edu.au, .edu.uk
+    }
+
     async function handleLogin() {
       const email    = document.getElementById('loginEmail').value.trim()
       const password = document.getElementById('loginPassword').value
@@ -416,12 +421,29 @@
       setLoading('loginBtn', true, 'Signing in…')
       hideAlert()
 
-      const { error } = await sb.auth.signInWithPassword({ email, password })
+      const { data, error } = await sb.auth.signInWithPassword({ email, password })
       if (error) {
         setLoading('loginBtn', false, 'Sign in')
         showAlert(error.message || 'Login failed. Please check your credentials.', 'error')
         return
       }
+
+      // Check approval status
+      const { data: profile } = await sb.from('profiles').select('status, is_admin').eq('id', data.user.id).single()
+      if (profile?.is_admin) { window.location.href = 'admin.html'; return }
+      if (!profile || profile.status === 'pending') {
+        await sb.auth.signOut()
+        setLoading('loginBtn', false, 'Sign in')
+        showAlert('Your application is under review. We\'ll notify you once it\'s approved.', 'error')
+        return
+      }
+      if (profile.status === 'denied') {
+        await sb.auth.signOut()
+        setLoading('loginBtn', false, 'Sign in')
+        showAlert('Your application was not approved. Contact us if you think this is a mistake.', 'error')
+        return
+      }
+
       window.location.href = 'app.html'
     }
 
@@ -437,19 +459,32 @@
       setLoading('signupBtn', true, 'Creating account…')
       hideAlert()
 
+      const emailType = isEduEmail(email) ? 'edu' : 'non_edu'
+
       const { data, error } = await sb.auth.signUp({
         email, password,
         options: { data: { username } }
       })
 
       setLoading('signupBtn', false, 'Create account')
-
       if (error) { showAlert(error.message || 'Sign up failed. Please try again.', 'error'); return }
 
-      if (data.session) { window.location.href = 'app.html'; return }
+      // Save profile with status + email_type
+      if (data.user) {
+        await sb.from('profiles').upsert({
+          id: data.user.id,
+          username,
+          full_email: email,
+          email_type: emailType,
+          status: 'pending'
+        })
+      }
 
-      showAlert('Account created! Check your email to confirm, then sign in.', 'success')
-      setTimeout(() => switchTab('login'), 2500)
+      const msg = emailType === 'edu'
+        ? '✅ Application submitted! Since you have a .edu email your application is in our priority queue. We\'ll review it shortly.'
+        : '✅ Application submitted! Our team will review your application and get back to you.'
+
+      showAlert(msg, 'success')
     }
 
     document.addEventListener('keydown', e => {

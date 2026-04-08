@@ -1,0 +1,350 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>UFIIN — Admin</title>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --dp: #4D1840; --mp: #8C3085; --pk: #D99AC6; --pl: #fdf0f9;
+      --bg: #f5f5f7; --white: #fff;
+      --sep: rgba(0,0,0,0.08);
+      --green: #34c759; --red: #ff3b30; --blue: #007AFF; --orange: #ff9500;
+      --gray: #8e8e93; --gray2: #f2f2f7;
+    }
+    body { font-family: -apple-system, 'Helvetica Neue', sans-serif; background: var(--bg); color: #1c1c1e; min-height: 100vh; -webkit-font-smoothing: antialiased; }
+
+    /* NAV */
+    nav { background: var(--dp); padding: 0 32px; height: 60px; display: flex; align-items: center; justify-content: space-between; position: sticky; top: 0; z-index: 100; }
+    .nav-logo { display: flex; align-items: center; gap: 12px; }
+    .nav-logo img { height: 36px; filter: brightness(0) invert(1); }
+    .nav-title { font-size: 16px; font-weight: 700; color: white; letter-spacing: -0.3px; }
+    .nav-badge { background: var(--red); color: white; font-size: 11px; font-weight: 700; padding: 2px 8px; border-radius: 20px; }
+    .nav-right { display: flex; align-items: center; gap: 12px; }
+    .nav-user { font-size: 13px; color: rgba(255,255,255,0.6); }
+    .sign-out-btn { background: rgba(255,255,255,0.12); border: none; color: white; font-size: 13px; font-weight: 600; padding: 7px 14px; border-radius: 8px; cursor: pointer; transition: background 0.15s; }
+    .sign-out-btn:hover { background: rgba(255,255,255,0.2); }
+
+    /* LAYOUT */
+    .container { max-width: 1100px; margin: 0 auto; padding: 32px 24px; }
+
+    /* STATS ROW */
+    .stats-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-bottom: 32px; }
+    @media (max-width: 700px) { .stats-row { grid-template-columns: 1fr 1fr; } }
+    .stat-card { background: var(--white); border-radius: 14px; padding: 18px 20px; box-shadow: 0 1px 4px rgba(0,0,0,0.06); }
+    .stat-label { font-size: 12px; font-weight: 600; color: var(--gray); text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 6px; }
+    .stat-num { font-size: 28px; font-weight: 700; letter-spacing: -0.5px; }
+    .stat-num.edu { color: var(--blue); }
+    .stat-num.non-edu { color: var(--orange); }
+    .stat-num.accepted { color: var(--green); }
+    .stat-num.denied { color: var(--red); }
+
+    /* SECTION TABS */
+    .section-tabs { display: flex; gap: 4px; background: var(--gray2); padding: 4px; border-radius: 12px; margin-bottom: 24px; width: fit-content; }
+    .section-tab { padding: 9px 20px; border: none; background: none; border-radius: 9px; font-size: 14px; font-weight: 600; cursor: pointer; color: var(--gray); transition: background 0.15s, color 0.15s; }
+    .section-tab.active { background: var(--white); color: #1c1c1e; box-shadow: 0 1px 4px rgba(0,0,0,0.1); }
+
+    /* QUEUE PANELS */
+    .queue-panel { display: none; }
+    .queue-panel.active { display: block; }
+
+    .queue-cols { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+    @media (max-width: 700px) { .queue-cols { grid-template-columns: 1fr; } }
+
+    .queue-col { background: var(--white); border-radius: 16px; padding: 20px; box-shadow: 0 1px 4px rgba(0,0,0,0.06); }
+    .queue-col-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; padding-bottom: 14px; border-bottom: 1px solid var(--sep); }
+    .queue-col-title { font-size: 15px; font-weight: 700; }
+    .queue-col-title .dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; margin-right: 7px; }
+    .dot-pending { background: var(--orange); }
+    .dot-accepted { background: var(--green); }
+    .dot-denied { background: var(--red); }
+    .queue-count { font-size: 12px; font-weight: 700; background: var(--gray2); color: var(--gray); padding: 3px 9px; border-radius: 20px; }
+
+    /* APPLICANT CARD */
+    .applicant-card { display: flex; align-items: center; gap: 12px; padding: 12px 0; border-bottom: 1px solid var(--sep); }
+    .applicant-card:last-child { border-bottom: none; padding-bottom: 0; }
+    .applicant-avatar { width: 38px; height: 38px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 15px; color: white; flex-shrink: 0; }
+    .applicant-info { flex: 1; min-width: 0; }
+    .applicant-name { font-size: 14px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .applicant-email { font-size: 12px; color: var(--gray); margin-top: 1px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .applicant-time { font-size: 11px; color: var(--gray); margin-top: 2px; }
+    .applicant-actions { display: flex; gap: 6px; flex-shrink: 0; }
+    .action-btn { border: none; border-radius: 8px; font-size: 12px; font-weight: 700; padding: 6px 12px; cursor: pointer; transition: opacity 0.15s; }
+    .action-btn:hover { opacity: 0.8; }
+    .btn-accept { background: rgba(52,199,89,0.12); color: var(--green); }
+    .btn-deny { background: rgba(255,59,48,0.1); color: var(--red); }
+    .btn-restore { background: rgba(0,122,255,0.1); color: var(--blue); }
+
+    .empty-state { text-align: center; padding: 32px 16px; color: var(--gray); font-size: 13px; }
+    .empty-icon { font-size: 28px; margin-bottom: 8px; }
+
+    /* STATUS BADGE */
+    .status-badge { display: inline-block; font-size: 11px; font-weight: 700; padding: 2px 8px; border-radius: 20px; }
+    .badge-accepted { background: rgba(52,199,89,0.12); color: var(--green); }
+    .badge-denied { background: rgba(255,59,48,0.1); color: var(--red); }
+
+    /* LOADING */
+    #loadingScreen { position: fixed; inset: 0; background: var(--bg); display: flex; align-items: center; justify-content: center; flex-direction: column; gap: 14px; z-index: 999; }
+    .spinner { width: 32px; height: 32px; border: 3px solid #e5e5ea; border-top-color: var(--mp); border-radius: 50%; animation: spin 0.7s linear infinite; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+  </style>
+</head>
+<body>
+
+<div id="loadingScreen">
+  <div class="spinner"></div>
+  <div style="font-size:14px;color:#8e8e93;">Loading admin panel…</div>
+</div>
+
+<nav>
+  <div class="nav-logo">
+    <img src="https://ufiinsin.com/wp-content/uploads/2026/02/Logo-300x280.png" alt="UFIIN">
+    <span class="nav-title">Admin Panel</span>
+  </div>
+  <div class="nav-right">
+    <span class="nav-user" id="adminEmail"></span>
+    <button class="sign-out-btn" onclick="signOut()">Sign out</button>
+  </div>
+</nav>
+
+<div class="container" id="mainContent" style="display:none;">
+
+  <!-- Stats -->
+  <div class="stats-row">
+    <div class="stat-card">
+      <div class="stat-label">EDU Pending</div>
+      <div class="stat-num edu" id="stat-edu-pending">—</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">Non-EDU Pending</div>
+      <div class="stat-num non-edu" id="stat-nonedu-pending">—</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">Total Accepted</div>
+      <div class="stat-num accepted" id="stat-accepted">—</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">Total Denied</div>
+      <div class="stat-num denied" id="stat-denied">—</div>
+    </div>
+  </div>
+
+  <!-- Section tabs -->
+  <div class="section-tabs">
+    <button class="section-tab active" onclick="switchSection('edu')">🎓 EDU Emails</button>
+    <button class="section-tab" onclick="switchSection('nonedu')">🌐 Non-EDU Emails</button>
+  </div>
+
+  <!-- EDU Panel -->
+  <div class="queue-panel active" id="panel-edu">
+    <div class="queue-cols">
+      <div class="queue-col">
+        <div class="queue-col-header">
+          <div class="queue-col-title"><span class="dot dot-pending"></span>Pending</div>
+          <span class="queue-count" id="edu-pending-count">0</span>
+        </div>
+        <div id="edu-pending-list"><div class="empty-state"><div class="empty-icon">🎉</div>No pending EDU applications</div></div>
+      </div>
+      <div class="queue-col">
+        <div class="queue-col-header">
+          <div class="queue-col-title"><span class="dot dot-accepted"></span>Accepted</div>
+          <span class="queue-count" id="edu-accepted-count">0</span>
+        </div>
+        <div id="edu-accepted-list"><div class="empty-state"><div class="empty-icon">📭</div>None yet</div></div>
+      </div>
+    </div>
+    <div style="margin-top:20px;">
+      <div class="queue-col">
+        <div class="queue-col-header">
+          <div class="queue-col-title"><span class="dot dot-denied"></span>Denied</div>
+          <span class="queue-count" id="edu-denied-count">0</span>
+        </div>
+        <div id="edu-denied-list"><div class="empty-state"><div class="empty-icon">📭</div>None yet</div></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Non-EDU Panel -->
+  <div class="queue-panel" id="panel-nonedu">
+    <div class="queue-cols">
+      <div class="queue-col">
+        <div class="queue-col-header">
+          <div class="queue-col-title"><span class="dot dot-pending"></span>Pending</div>
+          <span class="queue-count" id="nonedu-pending-count">0</span>
+        </div>
+        <div id="nonedu-pending-list"><div class="empty-state"><div class="empty-icon">🎉</div>No pending non-EDU applications</div></div>
+      </div>
+      <div class="queue-col">
+        <div class="queue-col-header">
+          <div class="queue-col-title"><span class="dot dot-accepted"></span>Accepted</div>
+          <span class="queue-count" id="nonedu-accepted-count">0</span>
+        </div>
+        <div id="nonedu-accepted-list"><div class="empty-state"><div class="empty-icon">📭</div>None yet</div></div>
+      </div>
+    </div>
+    <div style="margin-top:20px;">
+      <div class="queue-col">
+        <div class="queue-col-header">
+          <div class="queue-col-title"><span class="dot dot-denied"></span>Denied</div>
+          <span class="queue-count" id="nonedu-denied-count">0</span>
+        </div>
+        <div id="nonedu-denied-list"><div class="empty-state"><div class="empty-icon">📭</div>None yet</div></div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+  const SUPABASE_URL = 'https://deegqrsblgcbvdatuaid.supabase.co'
+  const SUPABASE_ANON_KEY = 'sb_publishable_ux0RP7LLcrMFsJhL3AXwkA_C-92Zrh9'
+  const { createClient } = supabase
+  const sb = createClient(SUPABASE_URL, SUPABASE_ANON_KEY)
+
+  let allProfiles = []
+  let currentAdmin = null
+
+  const COLORS = ['#381d92','#7a00df','#0693e3','#8C3085','#ff6900','#00d084','#fcb900','#9b51e0']
+  function avatarColor(id) {
+    const n = [...(id||'x')].reduce((a,c) => a + c.charCodeAt(0), 0)
+    return COLORS[n % COLORS.length]
+  }
+  function initials(name) {
+    if (!name) return '?'
+    return name.trim().split(/\s+/).map(w => w[0]).join('').toUpperCase().slice(0,2)
+  }
+  function fmtDate(iso) {
+    if (!iso) return ''
+    return new Date(iso).toLocaleDateString('en-US', { month:'short', day:'numeric', year:'numeric' })
+  }
+  function escHtml(s) {
+    const d = document.createElement('div')
+    d.appendChild(document.createTextNode(s||''))
+    return d.innerHTML
+  }
+
+  async function init() {
+    const { data: { session } } = await sb.auth.getSession()
+    if (!session) { window.location.href = 'login.html'; return }
+
+    const { data: profile } = await sb.from('profiles').select('*').eq('id', session.user.id).single()
+    if (!profile?.is_admin) { window.location.href = 'app.html'; return }
+
+    currentAdmin = profile
+    document.getElementById('adminEmail').textContent = profile.username || session.user.email
+
+    await loadAll()
+    document.getElementById('loadingScreen').style.display = 'none'
+    document.getElementById('mainContent').style.display = 'block'
+  }
+
+  async function loadAll() {
+    const { data } = await sb.from('profiles')
+      .select('id, username, full_email, email_type, status, created_at')
+      .neq('is_admin', true)
+      .order('created_at', { ascending: false })
+
+    allProfiles = data || []
+    renderAll()
+  }
+
+  function renderAll() {
+    const edu     = allProfiles.filter(p => p.email_type === 'edu')
+    const nonEdu  = allProfiles.filter(p => p.email_type !== 'edu')
+
+    const eduPending   = edu.filter(p => p.status === 'pending')
+    const eduAccepted  = edu.filter(p => p.status === 'accepted')
+    const eduDenied    = edu.filter(p => p.status === 'denied')
+    const nePending    = nonEdu.filter(p => p.status === 'pending')
+    const neAccepted   = nonEdu.filter(p => p.status === 'accepted')
+    const neDenied     = nonEdu.filter(p => p.status === 'denied')
+
+    // Stats
+    document.getElementById('stat-edu-pending').textContent    = eduPending.length
+    document.getElementById('stat-nonedu-pending').textContent = nePending.length
+    document.getElementById('stat-accepted').textContent       = eduAccepted.length + neAccepted.length
+    document.getElementById('stat-denied').textContent         = eduDenied.length + neDenied.length
+
+    // Counts
+    document.getElementById('edu-pending-count').textContent    = eduPending.length
+    document.getElementById('edu-accepted-count').textContent   = eduAccepted.length
+    document.getElementById('edu-denied-count').textContent     = eduDenied.length
+    document.getElementById('nonedu-pending-count').textContent = nePending.length
+    document.getElementById('nonedu-accepted-count').textContent= neAccepted.length
+    document.getElementById('nonedu-denied-count').textContent  = neDenied.length
+
+    renderList('edu-pending-list',    eduPending,  'pending')
+    renderList('edu-accepted-list',   eduAccepted, 'accepted')
+    renderList('edu-denied-list',     eduDenied,   'denied')
+    renderList('nonedu-pending-list', nePending,   'pending')
+    renderList('nonedu-accepted-list',neAccepted,  'accepted')
+    renderList('nonedu-denied-list',  neDenied,    'denied')
+  }
+
+  function renderList(containerId, profiles, status) {
+    const el = document.getElementById(containerId)
+    if (!profiles.length) {
+      el.innerHTML = `<div class="empty-state"><div class="empty-icon">${status==='pending'?'🎉':'📭'}</div>None yet</div>`
+      return
+    }
+    el.innerHTML = profiles.map(p => {
+      const color = avatarColor(p.id)
+      const ini   = initials(p.username)
+      let actions = ''
+      if (status === 'pending') {
+        actions = `
+          <button class="action-btn btn-accept" onclick="updateStatus('${p.id}','accepted')">Accept</button>
+          <button class="action-btn btn-deny"   onclick="updateStatus('${p.id}','denied')">Deny</button>`
+      } else if (status === 'accepted') {
+        actions = `<button class="action-btn btn-deny" onclick="updateStatus('${p.id}','denied')">Revoke</button>`
+      } else if (status === 'denied') {
+        actions = `<button class="action-btn btn-restore" onclick="updateStatus('${p.id}','accepted')">Accept</button>`
+      }
+      return `
+        <div class="applicant-card" id="card-${p.id}">
+          <div class="applicant-avatar" style="background:${color};">${escHtml(ini)}</div>
+          <div class="applicant-info">
+            <div class="applicant-name">${escHtml(p.username || 'Unknown')}</div>
+            <div class="applicant-email">${escHtml(p.full_email || '—')}</div>
+            <div class="applicant-time">${fmtDate(p.created_at)}</div>
+          </div>
+          <div class="applicant-actions">${actions}</div>
+        </div>`
+    }).join('')
+  }
+
+  async function updateStatus(userId, newStatus) {
+    const card = document.getElementById('card-' + userId)
+    if (card) card.style.opacity = '0.4'
+
+    const { error } = await sb.from('profiles').update({ status: newStatus }).eq('id', userId)
+    if (error) {
+      alert('Error: ' + error.message)
+      if (card) card.style.opacity = '1'
+      return
+    }
+
+    // Update local state
+    allProfiles = allProfiles.map(p => p.id === userId ? { ...p, status: newStatus } : p)
+    renderAll()
+  }
+
+  function switchSection(section) {
+    document.querySelectorAll('.section-tab').forEach((t,i) => {
+      t.classList.toggle('active', (section==='edu' && i===0) || (section==='nonedu' && i===1))
+    })
+    document.getElementById('panel-edu').classList.toggle('active', section === 'edu')
+    document.getElementById('panel-nonedu').classList.toggle('active', section === 'nonedu')
+  }
+
+  async function signOut() {
+    await sb.auth.signOut()
+    window.location.href = 'login.html'
+  }
+
+  init()
+</script>
+</body>
+</html>
