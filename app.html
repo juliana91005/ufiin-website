@@ -804,6 +804,7 @@
       <div class="rp-tabs">
         <button class="rp-tab active" data-tab="members">Members</button>
         <button class="rp-tab" data-tab="favorites">Favorites</button>
+        <button class="rp-tab" data-tab="files">Files</button>
       </div>
 
       <!-- Members tab -->
@@ -815,6 +816,11 @@
       <!-- Favorites tab -->
       <div class="rp-panel" id="tab-favorites">
         <div id="favoritesItems"></div>
+      </div>
+
+      <!-- Files tab -->
+      <div class="rp-panel" id="tab-files">
+        <div id="filesItems"></div>
       </div>
     </div>
 
@@ -1103,6 +1109,32 @@ try { await loadReactions() } catch(e) { console.warn('reactions:', e) }
         .replace(/@(\w+)/g, '<span class="mention">@$1</span>')
     }
 
+    function renderContent(text) {
+      if (text && text.startsWith('__FILE__|')) {
+        const parts = text.split('|')
+        const url  = parts[1] || ''
+        const name = parts[2] || 'file'
+        const mime = parts[3] || ''
+        const caption = parts.slice(4).join('|')
+        let html = ''
+        if (mime.startsWith('image/')) {
+          html += `<img class="msg-image" src="${escHtml(url)}" loading="lazy" onclick="window.open('${escHtml(url)}','_blank')">`
+        } else if (mime.startsWith('video/')) {
+          html += `<video controls style="max-width:280px;max-height:200px;border-radius:12px;margin-top:6px;display:block;"><source src="${escHtml(url)}" type="${escHtml(mime)}"></video>`
+        } else {
+          const icon = mime.includes('pdf') ? '📄' : mime.includes('word') || mime.includes('doc') ? '📝' : mime.includes('sheet') || mime.includes('excel') ? '📊' : '📎'
+          const ext = name.includes('.') ? name.split('.').pop().toUpperCase() : 'FILE'
+          html += `<a class="msg-file-card" href="${escHtml(url)}" target="_blank" download="${escHtml(name)}">
+            <span class="msg-file-card-icon">${icon}</span>
+            <div><div class="msg-file-card-name">${escHtml(name)}</div><div class="msg-file-card-type">${ext}</div></div>
+          </a>`
+        }
+        if (caption) html += `<div style="margin-top:4px;">${parseMentions(caption)}</div>`
+        return html
+      }
+      return parseMentions(text)
+    }
+
     // ── Render reactions for a message ──
     function renderReactions(msgId, bodyEl) {
       let row = bodyEl.querySelector('.reactions-row')
@@ -1156,7 +1188,7 @@ try { await loadReactions() } catch(e) { console.warn('reactions:', e) }
               <span class="msg-time">${fmtTime(msg.created_at)}</span>
             </div>
             ${replyMsg}
-            <div class="msg-text">${parseMentions(msg.content)}</div>
+            <div class="msg-text">${renderContent(msg.content)}</div>
           </div>
         `
       } else {
@@ -1165,7 +1197,7 @@ try { await loadReactions() } catch(e) { console.warn('reactions:', e) }
           <div class="msg-avatar-gap"></div>
           <div class="msg-body">
             ${replyMsg}
-            <div class="msg-text">${parseMentions(msg.content)}</div>
+            <div class="msg-text">${renderContent(msg.content)}</div>
           </div>
         `
       }
@@ -1314,8 +1346,9 @@ try { await loadReactions() } catch(e) { console.warn('reactions:', e) }
     // ── Send message ──
     async function sendMessage() {
       const input = document.getElementById('msgInput')
-      const content = input.value.trim()
-      if (!content || !currentChannel) return
+      const textContent = input.value.trim()
+      if (!textContent && !selectedFile) return
+      if (!currentChannel) return
 
       input.value = ''
       autoResize(input)
@@ -1325,11 +1358,40 @@ try { await loadReactions() } catch(e) { console.warn('reactions:', e) }
       replyingTo = null
       document.getElementById('replyBar').classList.remove('open')
 
+      let finalContent = textContent
+
+      // Handle file upload
+      if (selectedFile) {
+        const file = selectedFile
+        selectedFile = null
+        document.getElementById('filePreviewBar').classList.remove('open')
+        document.getElementById('filePreviewThumb').innerHTML = ''
+
+        showToast('Uploading…')
+
+        const ext = file.name.includes('.') ? file.name.split('.').pop() : 'bin'
+        const path = `${currentChannel.id}/${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`
+
+        const { error: uploadError } = await sb.storage
+          .from('chat-uploads')
+          .upload(path, file, { contentType: file.type })
+
+        if (uploadError) {
+          showToast('Upload failed: ' + uploadError.message)
+          return
+        }
+
+        const { data: urlData } = sb.storage.from('chat-uploads').getPublicUrl(path)
+        finalContent = `__FILE__|${urlData.publicUrl}|${file.name}|${file.type}${textContent ? '|' + textContent : ''}`
+      }
+
+      if (!finalContent) return
+
       // Optimistic UI
       const tempId  = 'temp-' + Date.now()
       const tempMsg = {
         id: tempId, channel_id: currentChannel.id,
-        user_id: currentUser.id, content,
+        user_id: currentUser.id, content: finalContent,
         created_at: new Date().toISOString(),
         profiles: currentProfile,
         reply_to_id: replyRef?.id || null,
@@ -1339,7 +1401,7 @@ try { await loadReactions() } catch(e) { console.warn('reactions:', e) }
       messages.push(tempMsg)
       appendMsg(tempMsg)
 
-      const insertData = { channel_id: currentChannel.id, user_id: currentUser.id, content }
+      const insertData = { channel_id: currentChannel.id, user_id: currentUser.id, content: finalContent }
       if (replyRef) insertData.reply_to_id = replyRef.id
 
       const { data, error } = await sb
@@ -1439,6 +1501,37 @@ try { await loadReactions() } catch(e) { console.warn('reactions:', e) }
 
     document.getElementById('sendBtn').addEventListener('click', sendMessage)
 
+    // ── File Upload ──
+    let selectedFile = null
+
+    document.getElementById('attachBtn').addEventListener('click', () => {
+      document.getElementById('fileInput').click()
+    })
+
+    document.getElementById('fileInput').addEventListener('change', e => {
+      const file = e.target.files[0]
+      if (!file) return
+      selectedFile = file
+      const thumbEl = document.getElementById('filePreviewThumb')
+      document.getElementById('filePreviewName').textContent = file.name
+      document.getElementById('filePreviewSize').textContent = (file.size / 1024 / 1024).toFixed(2) + ' MB'
+      if (file.type.startsWith('image/')) {
+        const objUrl = URL.createObjectURL(file)
+        thumbEl.innerHTML = `<img src="${objUrl}" class="file-preview-thumb">`
+      } else {
+        const icon = file.type.startsWith('video/') ? '🎥' : file.type.includes('pdf') ? '📄' : file.type.includes('word') || file.type.includes('doc') ? '📝' : '📎'
+        thumbEl.innerHTML = `<div class="file-preview-icon">${icon}</div>`
+      }
+      document.getElementById('filePreviewBar').classList.add('open')
+      e.target.value = ''
+    })
+
+    document.getElementById('cancelFile').addEventListener('click', () => {
+      selectedFile = null
+      document.getElementById('filePreviewBar').classList.remove('open')
+      document.getElementById('filePreviewThumb').innerHTML = ''
+    })
+
     document.getElementById('signOutBtn').addEventListener('click', async () => {
       if (confirm('Sign out of UFIIN Community?')) {
         if (presenceCh) await sb.removeChannel(presenceCh)
@@ -1504,6 +1597,7 @@ try { await loadReactions() } catch(e) { console.warn('reactions:', e) }
         tab.classList.add('active')
         document.getElementById('tab-' + tab.dataset.tab).classList.add('active')
         if (tab.dataset.tab === 'favorites') renderFavoritesPanel()
+        if (tab.dataset.tab === 'files') renderFilesPanel()
       })
     })
 
@@ -1566,6 +1660,29 @@ function jumpToMessage(msgId) {
             <div class="side-card-actions">
               <button class="side-card-remove" onclick="event.stopPropagation();toggleFavorite('${fav.message_id}')">Remove</button>
             </div>
+          </div>`
+      }).join('')
+    }
+
+    function renderFilesPanel() {
+      const el = document.getElementById('filesItems')
+      const fileMsgs = messages.filter(m => m.content && m.content.startsWith('__FILE__|'))
+      if (!fileMsgs.length) {
+        el.innerHTML = `<div class="rp-empty"><div class="rp-empty-icon">📎</div>No files yet.<br>Use the 📎 button to share files.</div>`
+        return
+      }
+      el.innerHTML = fileMsgs.slice().reverse().map(msg => {
+        const parts = msg.content.split('|')
+        const url  = parts[1] || ''
+        const name = parts[2] || 'file'
+        const mime = parts[3] || ''
+        const author = msg.profiles?.username || 'Unknown'
+        const icon = mime.startsWith('image/') ? '🖼️' : mime.startsWith('video/') ? '🎥' : mime.includes('pdf') ? '📄' : mime.includes('word') || mime.includes('doc') ? '📝' : '📎'
+        return `
+          <div class="side-card" onclick="window.open('${escHtml(url)}','_blank')">
+            <div class="side-card-author">${icon} ${escHtml(name)}</div>
+            <div class="side-card-text" style="font-size:11px;color:var(--ios-gray);">Shared by ${escHtml(author)}</div>
+            <div class="side-card-time">${fmtTime(msg.created_at)}</div>
           </div>`
       }).join('')
     }
